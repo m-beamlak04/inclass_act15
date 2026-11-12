@@ -1,4 +1,5 @@
 import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 
@@ -94,7 +95,7 @@ class _TriviaShowdownScreenState extends State<TriviaShowdownScreen> {
           if (!mounted || roundId != _roundId) return;
           setState(() {
             _error =
-            'Trivia API returned response code ${data['response_code']}. Please try again.';
+                'Trivia API returned response code ${data['response_code']}. Please try again.';
             _isLoading = false;
           });
         }
@@ -180,132 +181,132 @@ class _TriviaShowdownScreenState extends State<TriviaShowdownScreen> {
             ? const Center(child: CircularProgressIndicator())
             : _error.isNotEmpty
             ? Center(
-          child: Text(
-            _error,
-            style: const TextStyle(color: Colors.red, fontSize: 16),
-            textAlign: TextAlign.center,
-          ),
-        )
+                child: Text(
+                  _error,
+                  style: const TextStyle(color: Colors.red, fontSize: 16),
+                  textAlign: TextAlign.center,
+                ),
+              )
             : _currentIndex >= _questions.length
             ? Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              const Text(
-                'Showdown Complete!',
-                style: TextStyle(
-                  fontSize: 24,
-                  fontWeight: FontWeight.bold,
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    const Text(
+                      'Showdown Complete!',
+                      style: TextStyle(
+                        fontSize: 24,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    Text(
+                      'Final Score: $_score / ${_questions.length}',
+                      style: const TextStyle(fontSize: 18),
+                    ),
+                    const SizedBox(height: 24),
+                    if (!_isSynced)
+                      ElevatedButton.icon(
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.deepOrange,
+                          foregroundColor: Colors.white,
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 24,
+                            vertical: 12,
+                          ),
+                        ),
+                        onPressed: _isSyncing ? null : _syncScoreToCloud,
+                        icon: const Icon(Icons.cloud_upload),
+                        label: Text(
+                          _isSyncing
+                              ? 'Simulating sync...'
+                              : 'Simulate Score Sync',
+                        ),
+                      )
+                    else
+                      const Text(
+                        '✓ Sync Simulation Complete',
+                        style: TextStyle(
+                          color: Colors.green,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 16,
+                        ),
+                      ),
+                    const SizedBox(height: 16),
+                    TextButton(
+                      onPressed: _restart,
+                      child: const Text('Play Again'),
+                    ),
+                  ],
                 ),
-              ),
-              const SizedBox(height: 12),
-              Text(
-                'Final Score: $_score / ${_questions.length}',
-                style: const TextStyle(fontSize: 18),
-              ),
-              const SizedBox(height: 24),
-              if (!_isSynced)
-                ElevatedButton.icon(
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.deepOrange,
-                    foregroundColor: Colors.white,
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 24,
-                      vertical: 12,
+              )
+            : Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  LinearProgressIndicator(
+                    value: (_currentIndex + 1) / _questions.length,
+                    backgroundColor: Colors.orange.shade100,
+                    color: Colors.deepOrange,
+                  ),
+                  const SizedBox(height: 16),
+                  Text(
+                    'Question ${_currentIndex + 1} of ${_questions.length}',
+                    style: const TextStyle(
+                      color: Colors.grey,
+                      fontWeight: FontWeight.bold,
                     ),
                   ),
-                  onPressed: _isSyncing ? null : _syncScoreToCloud,
-                  icon: const Icon(Icons.cloud_upload),
-                  label: Text(
-                    _isSyncing
-                        ? 'Simulating sync...'
-                        : 'Simulate Score Sync',
+                  const SizedBox(height: 12),
+                  Card(
+                    elevation: 4,
+                    child: Padding(
+                      padding: const EdgeInsets.all(20.0),
+                      child: Text(
+                        _questions[_currentIndex].questionText,
+                        style: const TextStyle(fontSize: 18),
+                      ),
+                    ),
                   ),
-                )
-              else
-                const Text(
-                  '✓ Sync Simulation Complete',
-                  style: TextStyle(
-                    color: Colors.green,
-                    fontWeight: FontWeight.bold,
-                    fontSize: 16,
-                  ),
-                ),
-              const SizedBox(height: 16),
-              TextButton(
-                onPressed: _restart,
-                child: const Text('Play Again'),
+                  const SizedBox(height: 20),
+                  ..._questions[_currentIndex].options.map((opt) {
+                    Color btnColor = Colors.white;
+                    if (_answered) {
+                      if (opt == _questions[_currentIndex].correctAnswer) {
+                        btnColor = Colors.green.shade200;
+                      } else if (opt == _selectedOption) {
+                        btnColor = Colors.red.shade200;
+                      }
+                    }
+                    return Padding(
+                      padding: const EdgeInsets.only(bottom: 12.0),
+                      child: ElevatedButton(
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: btnColor,
+                          foregroundColor: Colors.black87,
+                          padding: const EdgeInsets.symmetric(vertical: 16),
+                        ),
+                        onPressed: () => _answerQuestion(opt),
+                        child: Text(opt, style: const TextStyle(fontSize: 16)),
+                      ),
+                    );
+                  }),
+                  const Spacer(),
+                  if (_answered)
+                    ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.deepOrange,
+                        foregroundColor: Colors.white,
+                        padding: const EdgeInsets.symmetric(vertical: 16),
+                      ),
+                      onPressed: _nextQuestion,
+                      child: Text(
+                        _currentIndex < _questions.length - 1
+                            ? 'Next Question →'
+                            : 'View Final Score',
+                      ),
+                    ),
+                ],
               ),
-            ],
-          ),
-        )
-            : Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            LinearProgressIndicator(
-              value: (_currentIndex + 1) / _questions.length,
-              backgroundColor: Colors.orange.shade100,
-              color: Colors.deepOrange,
-            ),
-            const SizedBox(height: 16),
-            Text(
-              'Question ${_currentIndex + 1} of ${_questions.length}',
-              style: const TextStyle(
-                color: Colors.grey,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-            const SizedBox(height: 12),
-            Card(
-              elevation: 4,
-              child: Padding(
-                padding: const EdgeInsets.all(20.0),
-                child: Text(
-                  _questions[_currentIndex].questionText,
-                  style: const TextStyle(fontSize: 18),
-                ),
-              ),
-            ),
-            const SizedBox(height: 20),
-            ..._questions[_currentIndex].options.map((opt) {
-              Color btnColor = Colors.white;
-              if (_answered) {
-                if (opt == _questions[_currentIndex].correctAnswer) {
-                  btnColor = Colors.green.shade200;
-                } else if (opt == _selectedOption) {
-                  btnColor = Colors.red.shade200;
-                }
-              }
-              return Padding(
-                padding: const EdgeInsets.only(bottom: 12.0),
-                child: ElevatedButton(
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: btnColor,
-                    foregroundColor: Colors.black87,
-                    padding: const EdgeInsets.symmetric(vertical: 16),
-                  ),
-                  onPressed: () => _answerQuestion(opt),
-                  child: Text(opt, style: const TextStyle(fontSize: 16)),
-                ),
-              );
-            }),
-            const Spacer(),
-            if (_answered)
-              ElevatedButton(
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.deepOrange,
-                  foregroundColor: Colors.white,
-                  padding: const EdgeInsets.symmetric(vertical: 16),
-                ),
-                onPressed: _nextQuestion,
-                child: Text(
-                  _currentIndex < _questions.length - 1
-                      ? 'Next Question →'
-                      : 'View Final Score',
-                ),
-              ),
-          ],
-        ),
       ),
     );
   }
